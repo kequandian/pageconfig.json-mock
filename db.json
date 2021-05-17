@@ -1,0 +1,24 @@
+{
+  "posts": [
+    {
+      "title": "hello",
+      "id": "1621235592239"
+    },
+    {
+      "title": "Java",
+      "id": "1621235730611"
+    },
+    {
+      "title": "JavaScript",
+      "id": "1621235795571"
+    },
+    {
+      "title": "test",
+      "id": "1621236139288"
+    }
+  ],
+  "user": {
+    "name": "typicode"
+  },
+  "count": 1
+}

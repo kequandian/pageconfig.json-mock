@@ -1,0 +1,18 @@
+{
+  "name": "json.mock.smallsaas.cn",
+  "version": "0.0.1",
+  "author": {
+    "name": "kequandian"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "lowdb": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=8"
+  }
+}
