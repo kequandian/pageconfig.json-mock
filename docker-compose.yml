@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  json-mock:
+    image: node
+    container_name: json-mock
+    working_dir: /src
+    volumes:
+      - "./src:/src"
+    ports:
+      - "3000:3000"
+    entrypoint: ["sh", "-c", "npm install && npm run start"]
