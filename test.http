@@ -1,0 +1,17 @@
+@API = http://127.0.0.1:3000
+
+### 列出所有POSTS
+GET {{API}}/posts/
+
+### 根据ID查询某个POSTS
+GET {{API}}/posts/1621235592239
+
+### 插入POSTS
+POST {{API}}/posts
+Content-Type: application/json
+{
+    "title": "test.http"
+}
+
+### 删除POST
+DELETE {{API}}/posts/:id

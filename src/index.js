@@ -1,11 +1,10 @@
 const express = require('express')
-const bodyParser = require('body-parser')
 const low = require('lowdb')
 const FileAsync = require('lowdb/adapters/FileAsync')
 
 // Create server
 const app = express()
-app.use(bodyParser.json())
+app.use(express.json());
 
 // Create database instance and start server
 const adapter = new FileAsync('db.json')
@@ -31,6 +30,7 @@ low(adapter)
 
         // POST /posts
         app.post('/posts', (req, res) => {
+            console.log(req.body)
             db.get('posts')
                 .push(req.body)
                 .last()
