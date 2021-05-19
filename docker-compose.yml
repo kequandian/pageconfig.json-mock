@@ -1,11 +1,12 @@
 version: "3.8"
 services:
   json-mock:
-    image: node
+    image: zelejs/json-mock:lastest
     container_name: json-mock
-    working_dir: /src
     volumes:
-      - "./src:/src"
+      - "./src:/usr/src"
     ports:
       - "3000:3000"
-    entrypoint: ["sh", "-c", "npm install && npm run start"]
+    build:
+      context: .
+      dockerfile: Dockerfile
