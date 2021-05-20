@@ -30,7 +30,6 @@ low(adapter)
 
         // POST /posts
         app.post('/posts', (req, res) => {
-            console.log(req.body)
             db.get('posts')
                 .push(req.body)
                 .last()
@@ -49,12 +48,19 @@ low(adapter)
 
         // PUT /posts
         app.put('/posts', (req, res) => {
-            console.log(req.body)
             db.get('posts')
                 .find({ id: req.body.id })
                 .assign(req.body)
                 .write()
                 .then(post => res.send(post))
+        })
+
+        app.post('/custom', (req, res) => {
+            const key = req.body.key;
+            const val = req.body.value;
+            if (key && val) {
+                db.set(key, val).write().then(() => res.send(val))
+            }
         })
 
         // Set db default values
