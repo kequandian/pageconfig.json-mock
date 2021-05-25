@@ -3,6 +3,9 @@ services:
   json-mock:
     image: zelejs/json-mock:lastest
     container_name: json-mock
+    volumes:
+      - "./src/db.json:/usr/src/db.json"
+      - "./src/index.js:/usr/src/index.js"
     ports:
       - "3000:3000"
     build:
