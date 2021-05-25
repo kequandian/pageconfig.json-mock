@@ -11,6 +11,11 @@ const adapter = new FileAsync('db.json')
 low(adapter)
     .then(db => {
         // Routes
+        app.get('/:name', (req, res) => {
+            const entity = db.get(req.params.name).value()
+            res.send(entity)
+        })
+
         // GET /posts/:id
         app.get('/posts/:id', (req, res) => {
             const post = db.get('posts')
