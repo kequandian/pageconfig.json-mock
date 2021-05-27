@@ -16,3 +16,17 @@ $ npm run start
 ```shell
 $ sh startup.sh
 ```
+
+## 数据接口
+
+- POST `/custom` 「用于自定义编辑数据」
+
+```json
+{
+    "key": "user.name",
+    "value": "Your Name"
+}
+```
+
+- GET `/:key`「用于获取数据库字段」
+  - 其中`key`可以通过`user.name`或`list[0].data`等方式进行获取
