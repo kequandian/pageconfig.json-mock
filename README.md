@@ -23,8 +23,8 @@ $ sh startup.sh
 
 ```json
 {
-    "key": "user.name",
-    "value": "Your Name"
+  "key1": "val1",
+  "key2": "val2"
 }
 ```
 

@@ -61,11 +61,12 @@ low(adapter)
         })
 
         app.post('/custom', (req, res) => {
-            const key = req.body.key;
-            const val = req.body.value;
-            if (key && val) {
-                db.set(key, val).write().then(() => res.send(val))
-            }
+            Object.keys(req.body || '').forEach(key => {
+                if (key && req.body[key]) {
+                    db.set(key, req.body[key]).write()
+                }
+            })
+            res.send(req.body)
         })
 
         // Set db default values
