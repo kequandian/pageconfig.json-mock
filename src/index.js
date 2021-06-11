@@ -12,8 +12,10 @@ low(adapter)
     .then(db => {
         // Routes
         app.get('/:name', (req, res) => {
-            const entity = db.get(req.params.name).value()
-            res.send(entity)
+            const id = parseInt(req.query.id)
+            const name = req.params.name
+            const entity = id ? db.get(name).find({ id: id }) : db.get(name).value()
+            res.send({ 'code': 200, 'data': entity })
         })
 
         // GET /posts/:id
@@ -66,7 +68,25 @@ low(adapter)
                     db.set(key, req.body[key]).write()
                 }
             })
-            res.send(req.body)
+            res.send({ 'code': 200, 'data': req.body })
+        })
+
+        app.post('/custom/:name', (req, res) => {
+            const name = req.params.name
+            if (name) {
+                let vals = db.get(name).value()
+                vals.push(req.body)
+                db.get(name).assign(vals).write()
+                res.send({ 'code': 200, 'data': req.body })
+            }
+        })
+
+        app.get('/custom/:name', (req, res) => {
+            const name = req.params.name
+            const o = db.get(name)
+                .find({ id: parseInt(req.query.id) })
+                .value()
+            res.send(o)
         })
 
         // Set db default values
