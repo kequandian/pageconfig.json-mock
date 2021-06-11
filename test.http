@@ -52,3 +52,11 @@ content-type: application/json
 DELETE {{API}}/custom/forms?id=2
 
 GET {{API}}/forms?id=1
+
+POST {{API}}/form/1
+Content-Type: application/json
+{
+    "xx":"yy1"
+}
+
+GET {{API}}/form?id=1

@@ -11,12 +11,6 @@ const adapter = new FileAsync('db.json')
 low(adapter)
     .then(db => {
         // Routes
-        app.get('/:name', (req, res) => {
-            const id = parseInt(req.query.id)
-            const name = req.params.name
-            const entity = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
-            res.send({ 'code': 200, 'data': entity })
-        })
 
         // GET /posts/:id
         app.get('/posts/:id', (req, res) => {
@@ -100,7 +94,7 @@ low(adapter)
             const name = req.params.name
             const id = parseInt(req.query.id)
             const o = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
-            res.send(o)
+            res.send({ 'code': 200, 'data': o })
         })
 
         app.delete('/custom/:name', (req, res) => {
@@ -112,6 +106,30 @@ low(adapter)
                 db.get(name).remove().write()
             }
             res.send({ 'code': 200, 'msg': "success" })
+        })
+
+        app.post('/form/:id', (req, res) => {
+            const id = parseInt(req.params.id)
+            if (db.get('forms').findIndex({ "id": id }).value() === -1) {
+                db.get('forms').push({ "id": id, "form": req.body }).write()
+            } else {
+                db.get('forms').find({ "id": id }).assign({ "id": id, "form": req.body }).write()
+            }
+            res.send({ 'code': 200, 'data': req.body })
+        })
+
+        app.get('/form', (req, res) => {
+            const id = parseInt(req.query.id)
+            const o = id ? db.get('forms').find({ "id": id }).value() : db.get('forms').value()
+            res.send({ 'code': 200, 'data': o['form'] })
+        })
+
+
+        app.get('/:name', (req, res) => {
+            const id = parseInt(req.query.id)
+            const name = req.params.name
+            const entity = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
+            res.send({ 'code': 200, 'data': entity })
         })
 
         // Set db default values
