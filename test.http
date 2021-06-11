@@ -24,3 +24,31 @@ POST {{API}}/custom
     "key": "key",
     "value": "val"
 }
+
+POST {{API}}/custom
+content-type: application/json
+{
+    "forms": [
+        {"id": 1, "xxx": "xxx"},
+        {"id": 2, "xxx": "yyy"}
+    ]
+}
+
+POST {{API}}/custom/forms
+content-type: application/json
+{
+    "id": 1,
+    "xxx": "xx1"
+}
+
+PUT {{API}}/custom/forms
+content-type: application/json
+{
+    "id": 1,
+    "xxx": "yyy"
+}
+
+
+DELETE {{API}}/custom/forms?id=2
+
+GET {{API}}/forms?id=1

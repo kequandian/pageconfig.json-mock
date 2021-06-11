@@ -14,7 +14,7 @@ low(adapter)
         app.get('/:name', (req, res) => {
             const id = parseInt(req.query.id)
             const name = req.params.name
-            const entity = id ? db.get(name).find({ id: id }) : db.get(name).value()
+            const entity = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
             res.send({ 'code': 200, 'data': entity })
         })
 
@@ -73,20 +73,45 @@ low(adapter)
 
         app.post('/custom/:name', (req, res) => {
             const name = req.params.name
-            if (name) {
-                let vals = db.get(name).value()
-                vals.push(req.body)
-                db.get(name).assign(vals).write()
+            let vals = db.get(name)
+            if (vals.findIndex({ "id": parseInt(req.body.id) }).value() === -1) {
+                vals.push(req.body).write()
+                res.send({ 'code': 200, 'data': req.body })
+            } else {
+                res.send({ 'code': 500, 'msg': "数据冲突" })
+            }
+
+        })
+
+        app.put('/custom/:name', (req, res) => {
+            const name = req.params.name
+            const id = parseInt(req.body.id)
+            const vals = db.get(name)
+            if (vals.findIndex({ "id": id }).value() === -1) {
+                res.send({ 'code': 500, 'msg': "源数据不存在" })
+            } else {
+                vals.find({ "id": id }).assign(req.body).write()
                 res.send({ 'code': 200, 'data': req.body })
             }
+
         })
 
         app.get('/custom/:name', (req, res) => {
             const name = req.params.name
-            const o = db.get(name)
-                .find({ id: parseInt(req.query.id) })
-                .value()
+            const id = parseInt(req.query.id)
+            const o = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
             res.send(o)
+        })
+
+        app.delete('/custom/:name', (req, res) => {
+            const name = req.params.name
+            const id = req.query.id
+            if (id) {
+                db.get(name).remove({ "id": id }).write()
+            } else {
+                db.get(name).remove().write()
+            }
+            res.send({ 'code': 200, 'msg': "success" })
         })
 
         // Set db default values
