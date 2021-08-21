@@ -4,11 +4,12 @@
 GET {{API}}/posts/
 
 ### 根据ID查询某个POSTS
-GET {{API}}/posts/1621235592239
+GET {{API}}/posts/1629530995921
 
 ### 插入POSTS
-POST {{API}}/posts
+POST {{API}}/posts 
 Content-Type: application/json
+
 {
     "title": "test.http"
 }
@@ -19,7 +20,8 @@ DELETE {{API}}/posts/:id
 
 ### 自定义插入
 POST {{API}}/custom
-{{json}}
+Content-Type: application/json
+
 {
     "key": "key",
     "value": "val"
@@ -27,6 +29,7 @@ POST {{API}}/custom
 
 POST {{API}}/custom
 content-type: application/json
+
 {
     "forms": [
         {"id": 1, "xxx": "xxx"},
