@@ -118,10 +118,25 @@ app.post('/form/:id', (req, res) => {
 
 app.get('/form', (req, res) => {
     const id = parseInt(req.query.id)
-    const o = id ? db.get('forms').find({ "id": id }).value() : db.get('forms').value()
-    res.send({ 'code': 200, 'data': o['form'] })
+    const o = id ? (db.get('forms').find({ "id": id }).value())['form'] : db.get('forms').value()
+    res.send({ 'code': 200, 'data': o })
 })
 
+app.post('/data/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+    if (db.get('dataset').findIndex({ "id": id }).value() === -1) {
+        db.get('dataset').push({ "id": id, "data": req.body }).write()
+    } else {
+        db.get('dataset').find({ "id": id }).assign({ "id": id, "data": req.body }).write()
+    }
+    res.send({ 'code': 200, 'data': req.body })
+})
+
+app.get('/data', (req, res) => {
+    const id = parseInt(req.query.id)
+    const o = id ? (db.get('dataset').find({ "id": id }).value())['data'] : db.get('dataset').value()
+    res.send({ 'code': 200, 'data': o })
+})
 
 app.get('/:name', (req, res) => {
     const id = parseInt(req.query.id)
