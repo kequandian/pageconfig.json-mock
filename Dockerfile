@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:experimental
-FROM daocloud.io/library/node:12 as build
+# FROM daocloud.io/library/node:12 as build
+FROM node:alpine3.12
 
 WORKDIR /usr/src
 ADD ./src ./
