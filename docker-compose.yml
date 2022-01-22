@@ -8,6 +8,8 @@ services:
       - "./src/index.js:/usr/src/index.js"
     ports:
       - "3000:3000"
+    environment:
+      - environment: production
     build:
       context: .
       dockerfile: Dockerfile
