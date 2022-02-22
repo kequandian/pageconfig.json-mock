@@ -145,7 +145,7 @@ app.delete('/custom/:name', (req, res) => {
     res.send(customResponse(200, 'success', null))
 })
 
-app.post('/form/:id', (req, res) => {
+app.post('/dev/form/:id', (req, res) => {
     if (!checkPermission(res)) {
         return
     }
@@ -164,7 +164,7 @@ app.get('/form', (req, res) => {
     res.send(successResponse(o))
 })
 
-app.post('/data/:id', (req, res) => {
+app.post('/dev/data/:id', (req, res) => {
     if (!checkPermission(res)) {
         return
     }
