@@ -1,50 +1,189 @@
-@API = http://127.0.0.1:3000
+@endpoint = http://127.0.0.1:3000
 
-### 列出所有POSTS
-GET {{API}}/posts/
+### 列出所有posts
+GET {{endpoint}}/posts
 
 ### 根据ID查询某个POSTS
-GET {{API}}/posts/1629530995921
+GET {{endpoint}}/posts/1621235592239
 
-### 插入POSTS
-POST {{API}}/posts 
+### 增加`posts`新项
+POST {{endpoint}}/posts 
 Content-Type: application/json
 
 {
-    "title": "test.http"
+    "title": "data test"
 }
 
 ### 删除POST
-DELETE {{API}}/posts/:id
+DELETE {{endpoint}}/posts/:id
 
 
-### 自定义插入
-POST {{API}}/custom
-Content-Type: application/json
+## data:  任意数
 
-{
-    "key": "key",
-    "value": "val"
-}
 
-POST {{API}}/custom
+### 查询任意名称
+GET {{endpoint}}/data/users HTTP/1.1
+content-type: application/json
+
+### 查询任意名称，如果值是列表，取id值
+GET {{endpoint}}/data/users?id=1 HTTP/1.1
+content-type: application/json
+
+
+### 更新任意值
+# PUT {{endpoint}}/data/user HTTP/1.1
+# content-type: application/json
+
+# {
+#   "name": "change-it"
+# }
+
+### 删除任意名称
+DELETE {{endpoint}}/data/users?id=1 HTTP/1.1
+content-type: application/json
+
+
+
+## 表单
+
+
+
+### 查询所有表单
+GET {{endpoint}}/forms HTTP/1.1
+content-type: application/json
+
+
+### 查询id=10的表单
+GET {{endpoint}}/form?id=109 HTTP/1.1
+content-type: application/json
+
+### 删除id=109的表单
+DELETE {{endpoint}}/form/109  HTTP/1.1
+
+
+### 设置表单数据 （开发模式下）
+POST {{endpoint}}/form/109 HTTP/1.1
 content-type: application/json
 
 {
-    "forms": [
+    "fields": [
+      {
+        "__config__": {
+          "layout": "rowFormItem",
+          "tagIcon": "row",
+          "componentName": "自查事项",
+          "children": [
+            {
+              "__config__": {
+                "label": "自查项 #1",
+                "showLabel": true,
+                "tag": "el-input",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "placeholder": "请输入自查说明",
+              "__vModel__": "check1"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #2",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-radio-group",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "__slot__": {
+                "options":[
+                  { "label": "选项 #1", "value": "1" },
+                  { "label": "选项 #1", "value": "2" }
+                ]
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "placeholder": "请选择自查项 #2",
+              "__vModel__": "check2"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #3",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-checkbox-group",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "__slot__": {
+                "options":[
+                  { "label": "是", "value": "1" },
+                  { "label": "否", "value": "2" },
+                  { "label": "不知道", "value": "3" },
+                  { "label": "技术咨询", "value": "4" }
+                ]
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "__vModel__": "check3"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #4",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-input",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "placeholder": "请输入自查项4",
+              "readonly": false,
+              "inputBlock": true,
+              "__vModel__": "date"
+            }
+          ]
+        }
+      }
+
+    ],
+    "formRef": "elForm",
+    "formModel": "formData",
+    "size": "medium",
+    "labelPosition": "left",
+    "labelWidth": 100,
+    "formRules": "rules",
+    "gutter": 0,
+    "disabled": false,
+    "formBtns": true,
+    "unFocusedComponentBorder": false
+  }
+
+
+
+
+### 任意指定数据
+POST {{endpoint}}/data
+content-type: application/json
+
+{
+    "pages": [
         {"id": 1, "xxx": "xxx"},
         {"id": 2, "xxx": "yyy"}
     ]
 }
 
-POST {{API}}/custom/forms
+POST {{endpoint}}/data/forms
 content-type: application/json
 {
     "id": 1,
     "xxx": "xx1"
 }
 
-PUT {{API}}/custom/forms
+PUT {{endpoint}}/data/forms
 content-type: application/json
 {
     "id": 1,
@@ -52,14 +191,3 @@ content-type: application/json
 }
 
 
-DELETE {{API}}/custom/forms?id=2
-
-GET {{API}}/forms?id=1
-
-POST {{API}}/form/1
-Content-Type: application/json
-{
-    "xx":"yy1"
-}
-
-GET {{API}}/form?id=1

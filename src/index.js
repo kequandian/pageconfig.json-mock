@@ -15,17 +15,13 @@ const successResponse = (data) => {
     return {'code': 200, 'data': data}
 }
 
-const customResponse = (code, msg, data) => {
-    return {'code': code, 'msg': msg, 'data': data}
-}
-
 const errorResponse = (msg) => {
     return {'code': 500, 'msg': msg}
 }
 
 const checkPermission = (res) => {
     if (process.env.environment === 'production') {
-        res.send(errorResponse("生产环境禁止更新"))
+        res.send(errorResponse("update not allow in production environement!"))
         return false
     }
     return true
@@ -40,13 +36,13 @@ app.get('/posts/:id', (req, res) => {
     res.send(post)
 })
 
-// GET /posts
-app.get('/posts', (req, res) => {
-    const post = db.get('posts')
-        .value()
+// GET /posts, /:name instead
+// app.get('/posts', (req, res) => {
+//     const post = db.get('posts')
+//         .value()
+//     res.send(post)
+// })
 
-    res.send(post)
-})
 
 // POST /posts
 app.post('/posts', (req, res) => {
@@ -81,71 +77,9 @@ app.put('/posts', (req, res) => {
     .write())
 })
 
-app.post('/custom', (req, res) => {
-    if (!checkPermission(res)) {
-        return
-    }
-    Object.keys(req.body || '').forEach(key => {
-        if (key && req.body[key]) {
-            db.set(key, req.body[key]).write()
-        }
-    })
-    res.send(successResponse(req.body))
-})
 
-app.post('/custom/:name', (req, res) => {
-    if (!checkPermission(res)) {
-        return
-    }
-    const name = req.params.name
-    let vals = db.get(name)
-    if (vals.findIndex({ "id": parseInt(req.body.id) }).value() === -1) {
-        vals.push(req.body).write()
-        res.send(successResponse(req.body))
-    } else {
-        res.send(errorResponse("数据冲突"))
-    }
-
-})
-
-app.put('/custom/:name', (req, res) => {
-    if (!checkPermission(res)) {
-        return
-    }
-    const name = req.params.name
-    const id = parseInt(req.body.id)
-    const vals = db.get(name)
-    if (vals.findIndex({ "id": id }).value() === -1) {
-        res.send(errorResponse("源数据不存在"))
-    } else {
-        vals.find({ "id": id }).assign(req.body).write()
-        res.send(successResponse(req.body))
-    }
-
-})
-
-app.get('/custom/:name', (req, res) => {
-    const name = req.params.name
-    const id = parseInt(req.query.id)
-    const o = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
-    res.send(successResponse(o))
-})
-
-app.delete('/custom/:name', (req, res) => {
-    if (!checkPermission(res)) {
-        return
-    }
-    const name = req.params.name
-    const id = req.query.id
-    if (id) {
-        db.get(name).remove({ "id": id }).write()
-    } else {
-        db.get(name).remove().write()
-    }
-    res.send(customResponse(200, 'success', null))
-})
-
-app.post('/dev/form/:id', (req, res) => {
+// 表单
+app.post('/form/:id', (req, res) => {
     if (!checkPermission(res)) {
         return
     }
@@ -164,25 +98,96 @@ app.get('/form', (req, res) => {
     res.send(successResponse(o))
 })
 
-app.post('/dev/data/:id', (req, res) => {
+app.delete('/form/:id', (req, res) => {
     if (!checkPermission(res)) {
         return
     }
-    const id = parseInt(req.params.id)
-    if (db.get('dataset').findIndex({ "id": id }).value() === -1) {
-        db.get('dataset').push({ "id": id, "data": req.body }).write()
-    } else {
-        db.get('dataset').find({ "id": id }).assign({ "id": id, "data": req.body }).write()
+    res.send(db.get('forms')
+    .remove({ id: req.params.id })
+    .write())
+})
+
+// app.post('/data/:id', (req, res) => {
+//     if (!checkPermission(res)) {
+//         return
+//     }
+//     const id = parseInt(req.params.id)
+//     if (db.get('dataset').findIndex({ "id": id }).value() === -1) {
+//         db.get('dataset').push({ "id": id, "data": req.body }).write()
+//     } else {
+//         db.get('dataset').find({ "id": id }).assign({ "id": id, "data": req.body }).write()
+//     }
+//     res.send(successResponse(req.body))
+// })
+
+// app.get('/data', (req, res) => {
+//     const id = parseInt(req.query.id)
+//     const o = id ? (db.get('dataset').find({ "id": id }).value())['data'] : db.get('dataset').value()
+//     res.send(successResponse(o))
+// })
+
+app.post('/data', (req, res) => {
+    if (!checkPermission(res)) {
+        return
     }
+    Object.keys(req.body || '').forEach(key => {
+        if (key && req.body[key]) {
+            db.set(key, req.body[key]).write()
+        }
+    })
     res.send(successResponse(req.body))
 })
 
-app.get('/data', (req, res) => {
+app.post('/data/:name', (req, res) => {
+    if (!checkPermission(res)) {
+        return
+    }
+    const name = req.params.name
+    let vals = db.get(name)
+    if (vals.findIndex({ "id": parseInt(req.body.id) }).value() === -1) {
+        vals.push(req.body).write()
+        res.send(successResponse(req.body))
+    } else {
+        res.send(errorResponse("data conflict!"))
+    }
+})
+
+// TODO, put any data if vals is object
+// app.put('/data/:name', (req, res) => {
+//     if (!checkPermission(res)) {
+//         return
+//     }
+//     const name = req.params.name
+//     const id = parseInt(req.body.id)
+//     const vals = db.get(name)
+//     if (vals.findIndex({ "id": id }).value() === -1) {
+//         res.send(errorResponse("datasource not exists!"))
+//     } else {
+//         vals.find({ "id": id }).assign(req.body).write()
+//         res.send(successResponse(req.body))
+//     }
+// })
+
+app.get('/data/:name', (req, res) => {
+    const name = req.params.name
     const id = parseInt(req.query.id)
-    const o = id ? (db.get('dataset').find({ "id": id }).value())['data'] : db.get('dataset').value()
+    const o = id ? db.get(name).find({ "id": id }).value() : db.get(name).value()
     res.send(successResponse(o))
 })
 
+app.delete('/data/:name', (req, res) => {
+    const name = req.params.name
+    const id = req.query.id
+    if (id) {
+        db.get(name).remove({ "id": id }).write()
+    } else {
+        db.get(name).remove().write()
+    }
+    res.send(successResponse(id))
+})
+
+
+// query any name
 app.get('/:name', (req, res) => {       
     const id = parseInt(req.query.id)
     const name = req.params.name
