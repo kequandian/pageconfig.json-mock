@@ -83,7 +83,11 @@ content-type: application/json
 ## 表单页面设设置
 
 
-### 查询所有表单
+### 查询所有表单所有详情 （默认 verbose=false, 仅返回id)
+GET {{endpoint}}/forms?verbose=true HTTP/1.1
+content-type: application/json
+
+### 查询所有表单（仅返回id信息)
 GET {{endpoint}}/forms HTTP/1.1
 content-type: application/json
 
