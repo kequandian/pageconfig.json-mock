@@ -1,9 +1,11 @@
 const express = require('express')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
+const cors = require('cors')  // Add this line
 
 // Create server
 const app = express()
+app.use(cors())  // Add this line to enable CORS for all routes
 app.use(express.json());
 
 // Create database instance and start server
