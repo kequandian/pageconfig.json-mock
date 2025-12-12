@@ -115,21 +115,47 @@ RUST_LOG=debug cargo test -- --nocapture
 
 ## Docker
 
-```dockerfile
-FROM rust:1.75 as builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release
-
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/json-mock-rust /usr/local/bin/
-CMD ["json-mock-rust"]
-```
-
-Build and run:
+### Local Build (Optimized)
 
 ```bash
+# Build with BuildKit for faster builds
+export DOCKER_BUILDKIT=1
 docker build -t json-mock-rust .
-docker run -p 3000:3000 -e MONGODB_URI=mongodb://host.docker.internal:27017 json-mock-rust
+```
+
+### Deploy to CI Server
+
+Use the `sync-to-ci.sh` script for deployment:
+
+```bash
+# Sync files only
+./sync-to-ci.sh
+
+# Sync + build + push (one command)
+./sync-to-ci.sh n105 /tmp/json-mock-rust --deploy
+
+# Custom registry
+./sync-to-ci.sh n105 /tmp/json-mock-rust --deploy \
+  --registry=docker.io \
+  --image=username/json-mock-rust \
+  --tag=v1.0.0
+```
+
+**Available parameters:**
+- `--deploy` - Build and push Docker image after sync
+- `--registry=URL` - Docker registry URL (default: `registry1.cdnline.cn:5000`)
+- `--image=NAME` - Docker image name (default: `pageconfig/json-mock`)
+- `--tag=TAG` - Docker image tag (default: `rust`)
+
+### Docker Compose
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```

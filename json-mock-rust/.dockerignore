@@ -1,48 +1,33 @@
-# Rust build artifacts
+# Build artifacts
 target/
-**/*.rs.bk
 Cargo.lock
 
-# IDE and editor files
+# Git
+.git/
+.gitignore
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Documentation
+*.md
+!README.md
 
-# Git
-.git/
-.gitignore
+# CI/CD
+.github/
 
-# Docker files
+# Docker
 Dockerfile
 docker-compose.yml
 .dockerignore
 
-# Documentation
-README.md
-*.md
-
-# Environment files (will be set in docker-compose)
-.env
-.env.*.local
-
-# Test files
-tests/
-*.test.*
-
-# Logs
-*.log
+# Scripts
+*.sh
 
 # Temporary files
-tmp/
-temp/
+*.log
+*.tmp
