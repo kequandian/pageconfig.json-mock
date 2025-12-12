@@ -25,7 +25,7 @@ impl MongoDb {
         let db = client.database(db_name);
 
         // Verify connection
-        db.run_command(doc! { "ping": 1 }).await?;
+        db.run_command(doc! { "ping": 1 }, None).await?;
 
         Ok(Self { db })
     }
@@ -38,7 +38,7 @@ impl MongoDb {
     /// Get all documents from a collection
     pub async fn get_all(&self, collection_name: &str) -> Result<Vec<Value>, mongodb::error::Error> {
         let collection = self.collection(collection_name);
-        let cursor = collection.find(doc! {}).await?;
+        let cursor = collection.find(doc! {}, None).await?;
         let docs: Vec<Document> = cursor.try_collect().await?;
 
         let values: Vec<Value> = docs
@@ -56,7 +56,7 @@ impl MongoDb {
         id: i64,
     ) -> Result<Option<Value>, mongodb::error::Error> {
         let collection = self.collection(collection_name);
-        let doc = collection.find_one(doc! { "id": id }).await?;
+        let doc = collection.find_one(doc! { "id": id }, None).await?;
 
         Ok(doc.map(|d| bson_to_json(Bson::Document(d))))
     }
@@ -69,7 +69,7 @@ impl MongoDb {
     ) -> Result<Value, mongodb::error::Error> {
         let collection = self.collection(collection_name);
         let doc = json_to_bson_doc(&data);
-        collection.insert_one(doc).await?;
+        collection.insert_one(doc, None).await?;
         Ok(data)
     }
 
@@ -80,7 +80,7 @@ impl MongoDb {
         id: i64,
     ) -> Result<bool, mongodb::error::Error> {
         let collection = self.collection(collection_name);
-        let count = collection.count_documents(doc! { "id": id }).await?;
+        let count = collection.count_documents(doc! { "id": id }, None).await?;
         Ok(count > 0)
     }
 
@@ -93,9 +93,9 @@ impl MongoDb {
         let collection = self.collection(collection_name);
         // Try both string and integer ID
         let result = if let Ok(id_num) = id.parse::<i64>() {
-            collection.delete_many(doc! { "id": id_num }).await?
+            collection.delete_many(doc! { "id": id_num }, None).await?
         } else {
-            collection.delete_many(doc! { "id": id }).await?
+            collection.delete_many(doc! { "id": id }, None).await?
         };
         Ok(result.deleted_count)
     }
@@ -103,7 +103,7 @@ impl MongoDb {
     /// Delete all documents from a collection
     pub async fn delete_all(&self, collection_name: &str) -> Result<u64, mongodb::error::Error> {
         let collection = self.collection(collection_name);
-        let result = collection.delete_many(doc! {}).await?;
+        let result = collection.delete_many(doc! {}, None).await?;
         Ok(result.deleted_count)
     }
 
@@ -124,7 +124,7 @@ impl MongoDb {
         };
 
         let result = collection
-            .replace_one(filter, doc)
+            .replace_one(filter, doc, None)
             .await?;
 
         Ok(result.modified_count > 0)
@@ -138,15 +138,18 @@ impl MongoDb {
         key: &str,
         value: Value,
     ) -> Result<(), mongodb::error::Error> {
+        use mongodb::options::UpdateOptions;
+        
         let collection = self.collection(GLOBAL_STORE);
         let bson_value = json_to_bson(&value);
 
+        let options = UpdateOptions::builder().upsert(true).build();
         collection
             .update_one(
                 doc! { "_id": key },
                 doc! { "$set": { "value": bson_value } },
+                options,
             )
-            .upsert(true)
             .await?;
 
         Ok(())
@@ -155,7 +158,7 @@ impl MongoDb {
     /// Get a value from the global store
     pub async fn get_global(&self, key: &str) -> Result<Option<Value>, mongodb::error::Error> {
         let collection = self.collection(GLOBAL_STORE);
-        let doc = collection.find_one(doc! { "_id": key }).await?;
+        let doc = collection.find_one(doc! { "_id": key }, None).await?;
 
         Ok(doc.and_then(|d| d.get("value").map(|v| bson_to_json(v.clone()))))
     }
@@ -174,7 +177,7 @@ impl MongoDb {
         }
 
         let doc = json_to_bson_doc(&data);
-        collection.insert_one(doc).await?;
+        collection.insert_one(doc, None).await?;
         Ok(data)
     }
 
@@ -189,7 +192,7 @@ impl MongoDb {
 
         let doc = json_to_bson_doc(&data);
         let result = collection
-            .replace_one(doc! { "id": id.unwrap() }, doc)
+            .replace_one(doc! { "id": id.unwrap() }, doc, None)
             .await?;
 
         if result.modified_count > 0 {
@@ -202,14 +205,14 @@ impl MongoDb {
     /// Get a post by ID
     pub async fn get_post(&self, id: &str) -> Result<Option<Value>, mongodb::error::Error> {
         let collection = self.collection("posts");
-        let doc = collection.find_one(doc! { "id": id }).await?;
+        let doc = collection.find_one(doc! { "id": id }, None).await?;
         Ok(doc.map(|d| bson_to_json(Bson::Document(d))))
     }
 
     /// Delete a post by ID
     pub async fn delete_post(&self, id: &str) -> Result<bool, mongodb::error::Error> {
         let collection = self.collection("posts");
-        let result = collection.delete_one(doc! { "id": id }).await?;
+        let result = collection.delete_one(doc! { "id": id }, None).await?;
         Ok(result.deleted_count > 0)
     }
 
@@ -221,15 +224,18 @@ impl MongoDb {
         id: i64,
         form: Value,
     ) -> Result<(), mongodb::error::Error> {
+        use mongodb::options::UpdateOptions;
+        
         let collection = self.collection("forms");
         let bson_form = json_to_bson(&form);
 
+        let options = UpdateOptions::builder().upsert(true).build();
         collection
             .update_one(
                 doc! { "id": id },
                 doc! { "$set": { "id": id, "form": bson_form } },
+                options,
             )
-            .upsert(true)
             .await?;
 
         Ok(())
@@ -240,7 +246,7 @@ impl MongoDb {
         let collection = self.collection("forms");
 
         if let Some(form_id) = id {
-            let doc = collection.find_one(doc! { "id": form_id }).await?;
+            let doc = collection.find_one(doc! { "id": form_id }, None).await?;
             if let Some(d) = doc {
                 if let Some(form) = d.get("form") {
                     return Ok(bson_to_json(form.clone()));
@@ -248,7 +254,7 @@ impl MongoDb {
             }
             Ok(Value::Null)
         } else {
-            let cursor = collection.find(doc! {}).await?;
+            let cursor = collection.find(doc! {}, None).await?;
             let docs: Vec<Document> = cursor.try_collect().await?;
             let values: Vec<Value> = docs
                 .into_iter()
@@ -261,7 +267,7 @@ impl MongoDb {
     /// Delete a form by ID
     pub async fn delete_form(&self, id: i64) -> Result<bool, mongodb::error::Error> {
         let collection = self.collection("forms");
-        let result = collection.delete_one(doc! { "id": id }).await?;
+        let result = collection.delete_one(doc! { "id": id }, None).await?;
         Ok(result.deleted_count > 0)
     }
 }

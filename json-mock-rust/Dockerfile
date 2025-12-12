@@ -1,5 +1,5 @@
 # Use existing Rust image
-FROM rust:1.75 AS builder
+FROM rust:1.92 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -10,14 +10,17 @@ COPY . .
 # Build the application
 RUN cargo build --release
 
+
+## final stage to reduce image size
+
 # Runtime stage
 FROM debian:bookworm-slim
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     ca-certificates \
+#     curl \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -38,8 +41,8 @@ USER appuser
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#     CMD curl -f http://localhost:3000/health || exit 1
 
 # Run the application
 CMD ["./json-mock-rust"]

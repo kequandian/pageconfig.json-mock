@@ -13,11 +13,14 @@ use crate::models::{ApiResponse, IdQuery};
 use crate::AppState;
 
 /// Check if updates are allowed (not in production)
-fn check_permission(state: &AppState) -> Result<(), Json<ApiResponse<Value>>> {
+fn check_permission(state: &AppState) -> Result<(), (StatusCode, Json<ApiResponse<Value>>)> {
     if state.environment == "production" {
-        Err(Json(ApiResponse::error(
-            "update not allowed in production environment!",
-        )))
+        Err((
+            StatusCode::FORBIDDEN,
+            Json(ApiResponse::error(
+                "update not allowed in production environment!",
+            )),
+        ))
     } else {
         Ok(())
     }
@@ -46,14 +49,14 @@ pub async fn create_post(
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     match state.db.push_post(body).await {
-        Ok(post) => Json(post),
+        Ok(post) => Json(post).into_response(),
         Err(e) => {
             tracing::error!("Failed to create post: {}", e);
-            Json(Value::Null)
+            Json(Value::Null).into_response()
         }
     }
 }
@@ -64,15 +67,15 @@ pub async fn update_post(
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     match state.db.update_post(body).await {
-        Ok(Some(post)) => Json(post),
-        Ok(None) => Json(Value::Null),
+        Ok(Some(post)) => Json(post).into_response(),
+        Ok(None) => Json(Value::Null).into_response(),
         Err(e) => {
             tracing::error!("Failed to update post: {}", e);
-            Json(Value::Null)
+            Json(Value::Null).into_response()
         }
     }
 }
@@ -83,20 +86,20 @@ pub async fn delete_post(
     Path(id): Path<String>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     match state.db.delete_post(&id).await {
         Ok(deleted) => {
             if deleted {
-                Json(serde_json::json!([{"id": id}]))
+                Json(serde_json::json!([{"id": id}])).into_response()
             } else {
-                Json(serde_json::json!([]))
+                Json(serde_json::json!([])).into_response()
             }
         }
         Err(e) => {
             tracing::error!("Failed to delete post: {}", e);
-            Json(serde_json::json!([]))
+            Json(serde_json::json!([])).into_response()
         }
     }
 }
@@ -110,14 +113,14 @@ pub async fn upsert_form(
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     match state.db.upsert_form(id, body.clone()).await {
-        Ok(_) => Json(ApiResponse::success(body)),
+        Ok(_) => Json(ApiResponse::success(body)).into_response(),
         Err(e) => {
             tracing::error!("Failed to upsert form: {}", e);
-            Json(ApiResponse::error(e.to_string()))
+            Json(ApiResponse::error(e.to_string())).into_response()
         }
     }
 }
@@ -144,14 +147,14 @@ pub async fn delete_form(
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     match state.db.delete_form(id).await {
-        Ok(_) => Json(serde_json::json!([])),
+        Ok(_) => Json(ApiResponse::success(Value::Array(vec![]))).into_response(),
         Err(e) => {
             tracing::error!("Failed to delete form: {}", e);
-            Json(ApiResponse::error(e.to_string()))
+            Json(ApiResponse::error(e.to_string())).into_response()
         }
     }
 }
@@ -164,7 +167,7 @@ pub async fn post_data_batch(
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     if let Some(obj) = body.as_object() {
@@ -177,7 +180,7 @@ pub async fn post_data_batch(
         }
     }
 
-    Json(ApiResponse::success(body))
+    Json(ApiResponse::success(body)).into_response()
 }
 
 /// POST /data/:name - Insert into a named collection
@@ -187,14 +190,14 @@ pub async fn post_data_collection(
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
-        return resp;
+        return resp.into_response();
     }
 
     // Check if ID exists
     if let Some(id) = body.get("id").and_then(|v| v.as_i64()) {
         match state.db.exists_by_id(&name, id).await {
             Ok(true) => {
-                return Json(ApiResponse::error("data conflict!"));
+                return Json(ApiResponse::error("data conflict!")).into_response();
             }
             Err(e) => {
                 tracing::error!("Failed to check existence: {}", e);
@@ -204,10 +207,10 @@ pub async fn post_data_collection(
     }
 
     match state.db.insert(&name, body.clone()).await {
-        Ok(_) => Json(ApiResponse::success(body)),
+        Ok(_) => Json(ApiResponse::success(body)).into_response(),
         Err(e) => {
             tracing::error!("Failed to insert data: {}", e);
-            Json(ApiResponse::error(e.to_string()))
+            Json(ApiResponse::error(e.to_string())).into_response()
         }
     }
 }
@@ -250,10 +253,13 @@ pub async fn delete_data_collection(
     };
 
     match result {
-        Ok(_) => Json(ApiResponse::success(query.id.unwrap_or_default())),
+        Ok(_) => {
+            let id_value = query.id.unwrap_or_default();
+            Json(ApiResponse::success(Value::String(id_value))).into_response()
+        }
         Err(e) => {
             tracing::error!("Failed to delete data: {}", e);
-            Json(ApiResponse::error(e.to_string()))
+            Json(ApiResponse::error(e.to_string())).into_response()
         }
     }
 }
