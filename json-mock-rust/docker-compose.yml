@@ -4,8 +4,8 @@ services:
     image: mongo:7.0
     container_name: json-mock-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -30,10 +30,9 @@ services:
       # Enable BuildKit for better caching
       args:
         BUILDKIT_INLINE_CACHE: 1
+    image: pageconfig/json-mock:rust
     container_name: json-mock-rust-app
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       MONGODB_URI: mongodb://admin:password@mongodb:27017
       DB_NAME: json_mock

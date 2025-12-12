@@ -1,4 +1,4 @@
-@endpoint = http://gitlab2.cdnline.cn:8000/mock
+@endpoint = http://gitlab2.cdnline.cn:8000
 
 ### 查询所有表单所有详情 （默认 verbose=false, 仅返回id)
 GET {{endpoint}}/forms?verbose=true HTTP/1.1
