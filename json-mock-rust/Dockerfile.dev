@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1.4
+# Advanced Dockerfile using cargo-chef for optimal caching
+
+FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
+WORKDIR /app
+
+# Configure sparse protocol
+RUN mkdir -p .cargo && \
+    echo '[registries.crates-io]' > .cargo/config.toml && \
+    echo 'protocol = "sparse"' >> .cargo/config.toml
+
+# Prepare recipe (dependency analysis)
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+# Build dependencies
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+
+# Build dependencies with cache mounts
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    cargo chef cook --release --recipe-path recipe.json
+
+RUN cargo --version
+
+# Copy source and build application
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    cargo build --release
+
+#env RUSTC_WRAPPER=sccache
+ADD ./config.toml $HOME/.cargo/config.toml
+

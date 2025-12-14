@@ -1,0 +1,122 @@
+@endpoint = http://localhost:8000
+
+### 查询所有表单所有详情 （默认 verbose=false, 仅返回id)
+GET {{endpoint}}/forms?verbose=true HTTP/1.1
+content-type: application/json
+
+### 查询所有表单（仅返回id信息)
+GET {{endpoint}}/forms HTTP/1.1
+content-type: application/json
+
+
+### 查询id=10的表单
+GET {{endpoint}}/form?id=109 HTTP/1.1
+content-type: application/json
+
+### 删除id=109的表单
+DELETE {{endpoint}}/form/109  HTTP/1.1
+
+
+### 设置表单数据, 自定义id （用于开发模式）
+POST {{endpoint}}/form/109 HTTP/1.1
+content-type: application/json
+
+{
+    "fields": [
+      {
+        "__config__": {
+          "layout": "rowFormItem",
+          "tagIcon": "row",
+          "componentName": "自查事项",
+          "children": [
+            {
+              "__config__": {
+                "label": "自查项 #1",
+                "showLabel": true,
+                "tag": "el-input",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "placeholder": "请输入自查说明",
+              "__vModel__": "check1"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #2",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-radio-group",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "__slot__": {
+                "options":[
+                  { "label": "选项 #1", "value": "1" },
+                  { "label": "选项 #1", "value": "2" }
+                ]
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "placeholder": "请选择自查项 #2",
+              "__vModel__": "check2"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #3",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-checkbox-group",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "__slot__": {
+                "options":[
+                  { "label": "是", "value": "1" },
+                  { "label": "否", "value": "2" },
+                  { "label": "不知道", "value": "3" },
+                  { "label": "技术咨询", "value": "4" }
+                ]
+              },
+              "readonly": false,
+              "inputBlock": true,
+              "__vModel__": "check3"
+            },
+            {
+              "__config__": {
+                "label": "自查项 #4",
+                "labelWidth": null,
+                "showLabel": true,
+                "tag": "el-input",
+                "tagIcon": "input",
+                "required": false,
+                "layout": "colFormItem"
+              },
+              "placeholder": "请输入自查项4",
+              "readonly": false,
+              "inputBlock": true,
+              "__vModel__": "date"
+            }
+          ]
+        }
+      }
+
+    ],
+    "formRef": "elForm",
+    "formModel": "formData",
+    "size": "medium",
+    "labelPosition": "left",
+    "labelWidth": 100,
+    "formRules": "rules",
+    "gutter": 0,
+    "disabled": false,
+    "formBtns": true,
+    "unFocusedComponentBorder": false
+  }
+
+### end
+
