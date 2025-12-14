@@ -1,7 +1,7 @@
 // MongoDB initialization script for json-mock-rust
 
 // Switch to the json_mock database
-db = db.getSiblingDB('json_mock');
+db = db.getSiblingDB('pageconfig');
 
 // Create collections with indexes
 db.createCollection('forms');

@@ -1,0 +1,29 @@
+FROM debian:bookworm-slim
+
+# Install minimal runtime dependencies
+#RUN apt-get update && apt-get install -y \
+#    ca-certificates \
+#    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy the binary from builder stage
+COPY ./target/release/json-mock-rust .
+
+RUN chmod +x /app/json-mock-rust
+
+# Change ownership to app user
+RUN chown appuser:appuser /app/json-mock-rust
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["./json-mock-rust"]

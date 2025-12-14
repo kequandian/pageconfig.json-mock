@@ -1,5 +1,7 @@
-# Build artifacts
-target/
+# Build artifacts (exclude release binary)
+target/debug/
+target/.rustc_info.json
+target/.fingerprint/*/
 Cargo.lock
 
 # Git
