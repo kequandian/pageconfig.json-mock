@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "common-mongo-db",
+    "json-mock-rust",
+]
+resolver = "2"

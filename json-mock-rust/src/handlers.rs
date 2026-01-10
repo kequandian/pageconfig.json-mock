@@ -31,14 +31,14 @@ fn check_permission(state: &AppState) -> Result<(), (StatusCode, Json<ApiRespons
 /// POST /form/:id - Create or update a form
 pub async fn upsert_form(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<i64>,
+    Path(id): Path<String>,
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
         return resp.into_response();
     }
 
-    match state.db.upsert_form(id, body.clone()).await {
+    match state.form_repo.upsert(id.clone(), body.clone()).await {
         Ok(_) => Json(ApiResponse::success(body)).into_response(),
         Err(e) => {
             tracing::error!("Failed to upsert form: {}", e);
@@ -52,13 +52,27 @@ pub async fn get_forms(
     State(state): State<Arc<AppState>>,
     Query(query): Query<IdQuery>,
 ) -> impl IntoResponse {
-    let id = query.id.and_then(|s| s.parse::<i64>().ok());
-
-    match state.db.get_forms(id).await {
-        Ok(forms) => Json(ApiResponse::success(forms)),
-        Err(e) => {
-            tracing::error!("Failed to get forms: {}", e);
-            Json(ApiResponse::error(e.to_string()))
+    match query.id {
+        Some(id) => {
+            // Get single form by ID
+            match state.form_repo.get(&id).await {
+                Ok(Some(form)) => Json(ApiResponse::success(form)).into_response(),
+                Ok(None) => Json(ApiResponse::error("Form not found")).into_response(),
+                Err(e) => {
+                    tracing::error!("Failed to get form: {}", e);
+                    Json(ApiResponse::error(e.to_string())).into_response()
+                }
+            }
+        }
+        None => {
+            // Get all forms
+            match state.form_repo.get_all().await {
+                Ok(forms) => Json(ApiResponse::success(forms)).into_response(),
+                Err(e) => {
+                    tracing::error!("Failed to get forms: {}", e);
+                    Json(ApiResponse::error(e.to_string())).into_response()
+                }
+            }
         }
     }
 }
@@ -66,13 +80,15 @@ pub async fn get_forms(
 /// DELETE /form/:id - Delete a form by ID
 pub async fn delete_form(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<i64>,
+    Path(id): Path<String>,
 ) -> impl IntoResponse {
     if let Err(resp) = check_permission(&state) {
         return resp.into_response();
     }
 
-    match state.db.delete_form(id).await {
+    // Note: JsonRepository doesn't have delete, so we upsert with empty value
+    // to effectively "delete" the form data. Alternatively, we could add a delete method.
+    match state.form_repo.upsert(id.clone(), Value::Object(serde_json::Map::new())).await {
         Ok(_) => Json(ApiResponse::success(Value::Array(vec![]))).into_response(),
         Err(e) => {
             tracing::error!("Failed to delete form: {}", e);

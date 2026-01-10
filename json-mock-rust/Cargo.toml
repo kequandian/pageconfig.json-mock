@@ -10,7 +10,8 @@ description = "A generic JSON storage service using MongoDB"
 axum = { version = "0.7", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 
-# MongoDB
+# MongoDB - use common-mongo-db
+common-mongo-db = { path = "../common-mongo-db" }
 mongodb = "2.8"
 futures = "0.3"
 

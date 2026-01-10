@@ -2,7 +2,6 @@
 //!
 //! This service provides RESTful APIs to store and retrieve arbitrary JSON data.
 
-mod db;
 mod handlers;
 mod models;
 mod routes;
@@ -13,11 +12,11 @@ use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::db::MongoDb;
+use common_mongo_db::{JsonRepository, MongoDb};
 
 /// Application state shared across handlers
 pub struct AppState {
-    pub db: MongoDb,
+    pub form_repo: Arc<JsonRepository>,
     pub environment: String,
 }
 
@@ -43,14 +42,17 @@ async fn main() {
         .unwrap_or_else(|_| "development".to_string());
 
     // Connect to MongoDB
-    let db = MongoDb::new(&mongo_uri, &db_name)
+    let mongo = MongoDb::new(&mongo_uri, &db_name)
         .await
         .expect("Failed to connect to MongoDB");
+
+    // Create form repository with "forms" collection and "form" data field
+    let form_repo = Arc::new(JsonRepository::new(mongo, "forms", "form"));
 
     tracing::info!("Connected to MongoDB");
 
     // Create application state
-    let state = Arc::new(AppState { db, environment });
+    let state = Arc::new(AppState { form_repo, environment });
 
     // CORS configuration - allow all origins
     let cors = CorsLayer::new()
